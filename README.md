@@ -10,7 +10,7 @@ A competitive multiplayer implementation of the classic Minesweeper game.
 ### Prerequisites
 Ensure the following dependencies are installed on your system:
 
-- GCC Compiler Collection: For compiling with g++.
+- Your choice of C++ compiler (the build instructions assume that choice was GCC)
 - SDL2: For window creation, input handling, and rendering.
   - SDL_ttf for font file support and text rendering
   - SDL_image for image loading
