@@ -126,7 +126,8 @@ void NetworkClient::async_read()
                             std::cout << std::endl;
                         } else if (type == MessageType::Result)
                         {
-                            game_result = deserialize_bool(message_data);
+                            game_result = deserialize_result(message_data);
+                            std::cout << game_result << std::endl;
                         }
                         else if (type == MessageType::Seed)
                         {

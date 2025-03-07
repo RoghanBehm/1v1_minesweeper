@@ -174,19 +174,26 @@ int main() {
             game.checkWin();
         }
 
-        if (client.return_res() && !game.resultReturned) {
+        int result = client.return_res();
+        if (result == 2 && !game.resultReturned) { // Loss
             game.lose = true;
             game.popupActive = true;
             game.resultReturned = true;
         }
+        else if (result == 1 && !game.resultReturned) { // Win
+            game.win = true;
+            game.popupActive = true;
+            game.resultReturned = true;
+        }
+
 
         if (game.win) {
             if (game.popupActive) {
                 draw.blackFilter(renderer);
                 draw.Popup(renderer, font, "You wonnered!");
-                if (!game.winSent) {
+                if (!game.resultSent) {
                     game.sendWin(client);
-                    game.winSent = true;
+                    game.resultSent = true;
                 }
             }
 
@@ -196,6 +203,11 @@ int main() {
             if (game.popupActive) {
                 draw.blackFilter(renderer);
                 draw.Popup(renderer, font, "You lose!");
+                if (!game.resultSent) {
+                    game.sendLoss(client);
+                    game.resultSent = true;
+                }
+                
             }            
         }
         

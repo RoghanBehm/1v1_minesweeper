@@ -39,7 +39,7 @@ void Game::reset() {
     popupActive = false;
     safeCells = rows * cols - numMines;
     resultReturned = false;
-    winSent = false;
+    resultSent = false;
     resultReturned = false;
     grid.clear();
     grid.resize(rows, std::vector<Node>(cols));
@@ -290,9 +290,18 @@ void Game::sendNewReveals(NetworkClient &client)
 
 void Game::sendWin(NetworkClient &client)
 {
-    auto serialized = serialize_bool(true);
+    auto serialized = serialize_result(1);
     client.send_message(serialized);
+    std::cout << "Sending win message to server" << std::endl;
 }
+
+void Game::sendLoss(NetworkClient &client)
+{
+    auto serialized = serialize_result(2);
+    client.send_message(serialized);
+    std::cout << "Sending loss message to server" << std::endl;
+}
+
 
 void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps &mouseProps, const GameAssets &assets, Draw& draw)
 {

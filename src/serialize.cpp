@@ -49,10 +49,9 @@ std::vector<std::pair<int, int>> deserialize_pairs(const std::vector<char>& buff
     return coords;
 }
 
-std::vector<char> serialize_bool(bool b)
+std::vector<char> serialize_result(int result)
 {
     uint32_t body_size = sizeof(MessageType) + sizeof(uint8_t);
-
     uint32_t total_size = sizeof(uint32_t) + body_size;
 
     std::vector<char> buffer(total_size);
@@ -62,24 +61,27 @@ std::vector<char> serialize_bool(bool b)
     ptr += sizeof(uint32_t);
 
     MessageType type = MessageType::Result;
-    std::memcpy(ptr, &type, sizeof(type));
-    ptr += sizeof(type);
+    std::memcpy(ptr, &type, sizeof(MessageType));
+    ptr += sizeof(MessageType);
 
-    uint8_t bool_byte = b ? 1 : 0;
-    std::memcpy(ptr, &bool_byte, sizeof(bool_byte));
+    uint8_t result_byte = static_cast<uint8_t>(result);
+    std::memcpy(ptr, &result_byte, sizeof(uint8_t));
 
     return buffer;
 }
 
-bool deserialize_bool(const std::vector<char>& buffer)
+int deserialize_result(const std::vector<char>& buffer)
 {
-    const char* ptr = buffer.data() + sizeof(MessageType);
+  
+    const char* ptr = buffer.data();
+    ptr += sizeof(MessageType);  // Skip the MessageType
 
-    uint8_t bool_byte;
-    std::memcpy(&bool_byte, ptr, sizeof(bool_byte));
+    uint8_t result_byte;
+    std::memcpy(&result_byte, ptr, sizeof(uint8_t));
 
-    return (bool_byte != 0);
+    return static_cast<int>(result_byte);
 }
+
 
 
 std::vector<char> serialize_seed(int seed)

@@ -51,7 +51,7 @@ public:
     bool win;
     bool lose;
     bool resultReturned;
-    bool winSent;
+    bool resultSent;
     Game(int rows, int cols, int numMines);
     void setExploded(int cell_x, int cell_y);
     void reset();
@@ -63,6 +63,7 @@ public:
     bool checkWin();
     void revealCell(int row, int col);
     void sendWin(NetworkClient &client);
+    void sendLoss(NetworkClient &client);
     void requestRestart(NetworkClient &client);
     bool bothAgreedRestart(NetworkClient &client);
     void update(NetworkClient &client);
