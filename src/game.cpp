@@ -57,6 +57,8 @@ void Game::initialize() {
     grid = std::vector<std::vector<Node>>(rows, std::vector<Node>(cols));
     enemy_grid = std::vector<std::vector<Node>>(rows, std::vector<Node>(cols));
     plantMines();
+    safeStartCell = findSafeCell(); // Store the first-click safe cell
+
 }
 
 
@@ -364,12 +366,27 @@ void Game::update(NetworkClient &client) {
     }
 }
 
+std::pair<int, int> Game::findSafeCell() {
+    for (size_t i = 0; i < grid.size(); ++i) {
+        for (size_t j = 0; j < grid[i].size(); ++j) {
+            if (!grid[i][j].hasMine && !checkSurrounding(i, j)) {
+                std::cout << "Safe Start Cell found at: " << i << ", " << j << std::endl;
+                return {i, j};
+            }
+        }
+    }
+    std::cout << "No valid Safe Start Cell found, defaulting to (0,0)" << std::endl;
+    return {0, 0};
+}
+
 
 
 void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const GameAssets &assets, Draw& draw, std::vector<std::pair<int, int>> coords)
 {
 
-    revealEnemyCells(coords);
+    if (!coords.empty()) {
+        revealEnemyCells(coords);
+    }
     for (size_t i = 0; i < enemy_grid.size(); i++) {
         for (size_t j = 0; j < enemy_grid[i].size(); ++j) {
             int offset = 960;

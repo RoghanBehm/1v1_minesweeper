@@ -67,6 +67,8 @@ public:
     void requestRestart(NetworkClient &client);
     bool bothAgreedRestart(NetworkClient &client);
     void update(NetworkClient &client);
+    std::pair<int, int> findSafeCell();
+    std::pair<int, int> safeStartCell;
 };
 
 
