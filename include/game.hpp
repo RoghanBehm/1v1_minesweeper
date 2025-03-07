@@ -43,6 +43,8 @@ private:
     std::vector<std::pair<int, int>> returnRevealed();
     bool isLegitEnemyCell(size_t row, size_t col);
     void sendNewReveals(NetworkClient &client);
+    bool restart_requested_ = false;
+
 public:
     bool popupActive;
     int revealedCells;
@@ -61,6 +63,9 @@ public:
     bool checkWin();
     void revealCell(int row, int col);
     void sendWin(NetworkClient &client);
+    void requestRestart(NetworkClient &client);
+    bool bothAgreedRestart(NetworkClient &client);
+    void update(NetworkClient &client);
 };
 
 

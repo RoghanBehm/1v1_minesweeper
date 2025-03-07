@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <array>
 #include "game.hpp"
@@ -323,6 +324,30 @@ void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps 
         sendNewReveals(client);
     }
 }
+
+void Game::requestRestart(NetworkClient &client) {
+    if (!restart_requested_) {
+        restart_requested_ = true;
+        auto restartMessage = serialize_bool_restart(restart_requested_);
+        client.send_message(restartMessage);
+        std::cout << "Restart requested by this player." << std::endl;
+    }
+}
+
+
+bool Game::bothAgreedRestart(NetworkClient &client) {
+    return restart_requested_ && client.hasOpponentRestarted();
+}
+
+
+void Game::update(NetworkClient &client) {
+    if (bothAgreedRestart(client)) {
+        std::cout << "Both players agreed to restart. Resetting game..." << std::endl;
+        globalSettings.regenerate = true;
+        reset();
+    }
+}
+
 
 
 void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const GameAssets &assets, Draw& draw, std::vector<std::pair<int, int>> coords)

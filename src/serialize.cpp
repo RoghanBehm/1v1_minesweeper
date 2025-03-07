@@ -103,4 +103,25 @@ int deserialize_seed(const std::vector<char>& buffer)
     return seed;
 }
 
+std::vector<char> serialize_bool_restart(bool b)
+{
+    uint32_t body_size = sizeof(MessageType) + sizeof(uint8_t);
+
+    uint32_t total_size = sizeof(uint32_t) + body_size;
+
+    std::vector<char> buffer(total_size);
+    char* ptr = buffer.data();
+
+    std::memcpy(ptr, &body_size, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+
+    MessageType type = MessageType::Rematch;
+    std::memcpy(ptr, &type, sizeof(type));
+    ptr += sizeof(type);
+
+    uint8_t bool_byte = b ? 1 : 0;
+    std::memcpy(ptr, &bool_byte, sizeof(bool_byte));
+
+    return buffer;
+}
 

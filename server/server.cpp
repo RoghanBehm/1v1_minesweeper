@@ -3,7 +3,11 @@
 #include <memory>
 #include <algorithm>
 #include <boost/asio.hpp>
+#include <boost/asio/ip/host_name.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <cstdlib> 
 #include "../include/serialize.hpp"
+
 
 using boost::asio::ip::tcp;
 
@@ -57,8 +61,10 @@ class tcp_server
 {
 public:
     tcp_server(boost::asio::io_context& io_context, int seed)
-        : seed_(seed), io_context_(io_context), acceptor_(io_context, tcp::endpoint(tcp::v4(), 8000))
+        : seed_(seed), io_context_(io_context), acceptor_(io_context, tcp::endpoint(boost::asio::ip::address_v4::any(), 8000))
+
     {
+        print_host_ip();
         start_accept();
     }
 
@@ -100,9 +106,19 @@ private:
                     add_client(new_connection);
                     new_connection->start();
                 }
+                
                 start_accept();
             });
     }
+
+
+void print_host_ip()
+{
+    std::cout << "Fetching public IP..." << std::endl;
+    system("curl -s ifconfig.me");  
+    std::cout << std::endl;
+}
+
 
     int seed_;
     boost::asio::io_context& io_context_;

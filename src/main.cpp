@@ -12,7 +12,7 @@
 
 int main() {
     boost::asio::io_context io_context;
-    NetworkClient client(io_context, "localhost", "8000");
+    NetworkClient client(io_context, "1.123.64.48", "8000");
     std::thread io_thread([&io_context]() { io_context.run(); });
 
     std::vector<std::pair<int, int>> all_coords;
@@ -50,7 +50,7 @@ int main() {
 
     // Initialize game objects
     while (!globalSettings.seed_received) {};
-    Game game(16, 30, 20);
+    Game game(16, 30, 35);
     Draw draw;
     GameAssets assets;
     MouseProps mouseProps;
@@ -146,7 +146,13 @@ int main() {
             globalSettings.regenerate = false;
             globalSettings.first_click = true;
         }
+
+        if (reset_clicked) {
+            game.requestRestart(client);
+        }
         
+        game.update(client);
+
         auto board = client.return_board();
         for (auto x : board) {
             all_coords.push_back(x);
@@ -160,9 +166,8 @@ int main() {
         game.createGrid(renderer, client, mouseProps, assets, draw);
         game.createEnemyGrid(renderer, mouseProps, assets, draw, all_coords);
 
-        std::cout << game.revealedCells << "\n";
-        //Check for game over
-
+        
+        // Check win/loss
         if (!game.win) {
             game.checkWin();
         }
@@ -191,6 +196,7 @@ int main() {
                 draw.Popup(renderer, font, "You lose!");
             }            
         }
+        
 
         SDL_RenderPresent(renderer);
         Uint32 frameTime = SDL_GetTicks() - frameStart;

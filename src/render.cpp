@@ -155,7 +155,6 @@ void Draw::menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
     SDL_RenderFillRect(renderer, &reset_button);
 
     if (released) {
-        globalSettings.regenerate = true;
         SDL_SetRenderDrawColor(renderer, 0, 10, 103, 0);
         SDL_RenderFillRect(renderer, &reset_button);
     }

@@ -9,6 +9,9 @@ public:
     void read_seed();
     std::vector<std::pair<int,int>> return_board();
     bool return_res();
+    int seed;
+    void receiveRestartRequest();
+    bool hasOpponentRestarted();
 private:
     void async_read();
     boost::asio::ip::tcp::socket socket_;
@@ -16,5 +19,6 @@ private:
     std::vector<std::pair<int, int>> all_coords;
     std::vector<char> incoming_data_;
     bool game_result;
+    bool opponentRestartRequested = false;
     
 };

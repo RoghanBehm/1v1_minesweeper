@@ -51,7 +51,6 @@ void NetworkClient::read_seed()
 
                 if (type == MessageType::Seed)
                 {
-                    int seed;
                     std::memcpy(&seed,
                                 buffer->data() + sizeof(MessageType),
                                 sizeof(seed));
@@ -134,6 +133,9 @@ void NetworkClient::async_read()
                             read_seed();
                             globalSettings.regenerate = true;
                         }
+                        else if (type == MessageType::Rematch) {
+                            receiveRestartRequest();
+                        }
                         else
                         {
                             std::cerr << "Unknown message type\n";
@@ -152,6 +154,16 @@ void NetworkClient::async_read()
                 std::cerr << "Read error: " << ec.message() << std::endl;
             }
         });
+}
+
+void NetworkClient::receiveRestartRequest()
+{
+    opponentRestartRequested = true;
+    std::cout << "Opponent requested a restart" << std::endl;
+}
+
+bool NetworkClient::hasOpponentRestarted() {
+    return opponentRestartRequested;
 }
 
 
