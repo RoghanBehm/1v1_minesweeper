@@ -8,7 +8,7 @@ public:
     void send_message(const std::vector<char>& message);
     void read_seed();
     std::vector<std::pair<int,int>> return_board();
-    bool return_res();
+    int return_res();
     int seed;
     void receiveRestartRequest();
     bool hasOpponentRestarted();

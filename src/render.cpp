@@ -66,7 +66,7 @@ void Draw::mine_prox_cell(SDL_Renderer *renderer, const GameAssets &assets, int 
                 break;
         }
 }
-void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released, Node &cell, Game &game, const GameAssets &assets, int nearbyMines, int row, int col) {
+void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released, Node &cell, Game &game, const GameAssets &assets, int nearbyMines, int row, int col, bool isPlayer) {
     SDL_Rect rect = {x, y, globalSettings.cell_size, globalSettings.cell_size};
 
     // If this is the safe start cell, fill it with gold
@@ -107,7 +107,12 @@ void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
             globalSettings.game_over = true;
             return;
         }
-        globalSettings.first_click = false;
+
+        // If this is the player grid, set first click to false
+        if (isPlayer) {
+         globalSettings.first_click = false;
+        }
+        
 
         if (cell.isRevealed) {
             mine_prox_cell(renderer, assets, nearbyMines, rect);

@@ -178,7 +178,7 @@ std::vector<std::pair<int,int>> NetworkClient::return_board()
     return all_coords; 
 }
 
-bool NetworkClient::return_res()
+int NetworkClient::return_res()
 {
     return game_result;
 }

@@ -20,7 +20,7 @@ private:
 
 public:
     SDL_Rect okButtonRect;
-    void cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released, Node &cell, Game &game, const GameAssets &assets, int nearbyMines, int row, int col);
+    void cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released, Node &cell, Game &game, const GameAssets &assets, int nearbyMines, int row, int col, bool isPlayer);
     void menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released);
     void blackFilter(SDL_Renderer *renderer);
     void Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message);

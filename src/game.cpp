@@ -327,7 +327,7 @@ void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps 
             Node &currentCell = grid[i][j];
             mouseProps.released = cellClicked(mouseProps.mouseXr, mouseProps.mouseYr, cell_x, cell_y);
             int surroundingMines = checkSurrounding(i, j);
-            draw.cell(renderer, cell_x, cell_y, mouseProps.cellIsClicked, mouseProps.released, currentCell, *this, assets, surroundingMines, i, j);
+            draw.cell(renderer, cell_x, cell_y, mouseProps.cellIsClicked, mouseProps.released, currentCell, *this, assets, surroundingMines, i, j, true);
 
 
             // If current cell does not contain mine, reveal neighbouring cells if none contain mines
@@ -367,17 +367,25 @@ void Game::update(NetworkClient &client) {
 }
 
 std::pair<int, int> Game::findSafeCell() {
+    std::pair<int, int> fallback = {0, 0};
+
     for (size_t i = 0; i < grid.size(); ++i) {
         for (size_t j = 0; j < grid[i].size(); ++j) {
-            if (!grid[i][j].hasMine && !checkSurrounding(i, j)) {
-                std::cout << "Safe Start Cell found at: " << i << ", " << j << std::endl;
-                return {i, j};
+            if (!grid[i][j].hasMine) {  
+                if (checkSurrounding(i, j) == 0) {
+                    std::cout << "Safe Start Cell found at: " << i << ", " << j << std::endl;
+                    return {i, j}; // Return immediately if we find a safe cell block
+                }
+                fallback = {i, j}; // Store a fallback non-mine cell
             }
         }
     }
-    std::cout << "No valid Safe Start Cell found, defaulting to (0,0)" << std::endl;
-    return {0, 0};
+
+    // If we couldn't find a safe cell block, return a non-mine cell
+    std::cout << "No safe cell block found. Using fallback: " << fallback.first << ", " << fallback.second << std::endl;
+    return fallback;
 }
+
 
 
 
@@ -397,7 +405,7 @@ void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const 
             Node &currentCell = enemy_grid[i][j];
             int surroundingMines = 0; // Disable mine check for enemy grid
             
-            draw.cell(renderer, cell_x, cell_y, mouseProps.cellIsClicked, mouseProps.released, currentCell, *this, assets, surroundingMines, i, j);
+            draw.cell(renderer, cell_x, cell_y, mouseProps.cellIsClicked, mouseProps.released, currentCell, *this, assets, surroundingMines, i, j, false);
         }
     }
 }
