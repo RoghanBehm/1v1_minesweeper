@@ -19,7 +19,7 @@ private:
     std::vector<std::pair<int, int>> coords;
     std::vector<std::pair<int, int>> all_coords;
     std::vector<char> incoming_data_;
-    bool game_result;
+    int game_result;
     bool opponentRestartRequested = false;
     
 };

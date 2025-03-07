@@ -50,7 +50,7 @@ int main() {
 
     // Initialize game objects
     while (!globalSettings.seed_received) {};
-    Game game(16, 30, 35);
+    Game game(16, 30, 20);
     Draw draw;
     GameAssets assets;
     MouseProps mouseProps;

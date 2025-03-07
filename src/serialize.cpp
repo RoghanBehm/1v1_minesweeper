@@ -72,13 +72,9 @@ std::vector<char> serialize_result(int result)
 
 int deserialize_result(const std::vector<char>& buffer)
 {
-  
     const char* ptr = buffer.data();
-    ptr += sizeof(MessageType);  // Skip the MessageType
-
     uint8_t result_byte;
     std::memcpy(&result_byte, ptr, sizeof(uint8_t));
-
     return static_cast<int>(result_byte);
 }
 

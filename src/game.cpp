@@ -292,14 +292,14 @@ void Game::sendNewReveals(NetworkClient &client)
 
 void Game::sendWin(NetworkClient &client)
 {
-    auto serialized = serialize_result(1);
+    auto serialized = serialize_result(2);
     client.send_message(serialized);
     std::cout << "Sending win message to server" << std::endl;
 }
 
 void Game::sendLoss(NetworkClient &client)
 {
-    auto serialized = serialize_result(2);
+    auto serialized = serialize_result(1);
     client.send_message(serialized);
     std::cout << "Sending loss message to server" << std::endl;
 }
