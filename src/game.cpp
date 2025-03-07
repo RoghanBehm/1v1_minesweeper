@@ -4,6 +4,7 @@
 #include "game.hpp"
 #include "render.hpp"
 #include "serialize.hpp"
+#include "settings.hpp"
 
 
 Node node {
@@ -39,18 +40,23 @@ void Game::reset() {
     safeCells = rows * cols - numMines;
     resultReturned = false;
     winSent = false;
-
+    resultReturned = false;
+    grid.clear();
+    grid.resize(rows, std::vector<Node>(cols));
+    enemy_grid.clear();
+    enemy_grid.resize(rows, std::vector<Node>(cols));
+    globalSettings.game_over = false;
+    globalSettings.first_click = true;
     initialize();
 
+    
 }
 
 void Game::initialize() {
 
     grid = std::vector<std::vector<Node>>(rows, std::vector<Node>(cols));
     enemy_grid = std::vector<std::vector<Node>>(rows, std::vector<Node>(cols));
-    globalSettings.game_over = false;
     plantMines();
-
 }
 
 

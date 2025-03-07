@@ -142,8 +142,9 @@ int main() {
 
         // Reset game if regenerate
         if (globalSettings.regenerate) {
+            client.clearEnemyData();
+            all_coords.clear();
             game.reset();
-            reset_clicked = false;
             globalSettings.regenerate = false;
             globalSettings.first_click = true;
         }
