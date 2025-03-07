@@ -12,6 +12,7 @@ public:
     int seed;
     void receiveRestartRequest();
     bool hasOpponentRestarted();
+    void clearEnemyData();
 private:
     void async_read();
     boost::asio::ip::tcp::socket socket_;

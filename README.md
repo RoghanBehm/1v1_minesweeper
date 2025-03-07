@@ -10,7 +10,7 @@ A competitive multiplayer implementation of the classic Minesweeper game.
 ### Prerequisites
 Ensure the following dependencies are installed on your system:
 
-- GCC Compiler Collection: For compiling with g++.
+- Your choice of C++ compiler (the build instructions assume that choice was GCC)
 - SDL2: For window creation, input handling, and rendering.
   - SDL_ttf for font file support and text rendering
   - SDL_image for image loading
@@ -19,7 +19,6 @@ Ensure the following dependencies are installed on your system:
 ### Build Instructions
 1. Clone the repository:
 `git clone https://github.com/RoghanBehm/minesweeper.git`
-`cd minesweeper`
 
 2. Install required libraries
 - g++: [Installation guide](https://gcc.gnu.org/install/)
@@ -32,6 +31,7 @@ Ensure the following dependencies are installed on your system:
 `g++ -o server server/server.cpp include/serialize.cpp -I include`
 
 4. Build the client:
+`cd {your_path}/minesweeper`
 `make`
 
 ## How to Play
@@ -41,6 +41,8 @@ To play on a local network server instance:
 2. Connect as a client:
 `bin/minesweeper`
 3. Start sweeping for mines. Players can reveal tiles with left click and flag tiles with right click.
+
+At this stage, P2P over internet hosting requires the address value in main.cpp to be changed to the host server address, and port 8000 to be forwarded.
 
 
 

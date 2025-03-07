@@ -342,6 +342,7 @@ bool Game::bothAgreedRestart(NetworkClient &client) {
 
 void Game::update(NetworkClient &client) {
     if (bothAgreedRestart(client)) {
+        restart_requested_ = false;
         std::cout << "Both players agreed to restart. Resetting game..." << std::endl;
         globalSettings.regenerate = true;
         reset();

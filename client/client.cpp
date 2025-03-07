@@ -166,6 +166,10 @@ bool NetworkClient::hasOpponentRestarted() {
     return opponentRestartRequested;
 }
 
+void NetworkClient::clearEnemyData() {
+    all_coords.clear();
+}
+
 
 std::vector<std::pair<int,int>> NetworkClient::return_board()
 {

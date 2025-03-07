@@ -143,6 +143,7 @@ int main() {
         // Reset game if regenerate
         if (globalSettings.regenerate) {
             game.reset();
+            reset_clicked = false;
             globalSettings.regenerate = false;
             globalSettings.first_click = true;
         }
