@@ -13,11 +13,6 @@
 #include "../client/client.hpp"
 
 int main() {
-    boost::asio::io_context io_context;
-    NetworkClient client(io_context, "124.177.219.233", "8000");
-    std::thread io_thread([&io_context]() { io_context.run(); });
-
-    std::vector<std::pair<int, int>> all_coords;
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("Unable to initialise SDL: %s", SDL_GetError());
@@ -50,12 +45,9 @@ int main() {
         std::cerr << "SDL_SetWindowFullscreen Error: " << SDL_GetError() << std::endl;
     }
 
-    // Initialize game objects
-    while (!globalSettings.seed_received) {};
-    Game game(16, 30, 20);
+
     Draw draw;
     GameAssets assets;
-    MouseProps mouseProps;
 
     // Load assets
     if (loadGameAssets(renderer, &assets) != 0) {
@@ -87,6 +79,37 @@ int main() {
         return 1;
     }
 
+    std::string addr;
+    std::string ip;
+    std::string port;
+    int menuChoice = draw.mainMenu(renderer, font);
+
+    if (menuChoice == -1) {
+        SDL_Quit();
+    } else if (menuChoice == 1) {
+        // Player is host
+    } else if (menuChoice == 2) {
+        // Player is joining a game
+        std::cout << "enter ip and port (e.g., 123.0.0.1:3000)\n";
+        std::string delimiter = ":";
+        std::cin >> addr;
+    ip = addr.substr(0, addr.find(delimiter));
+    port = addr.substr(addr.find(delimiter) + 1);
+    }
+    Uint32 menuExitTime = SDL_GetTicks();
+
+    boost::asio::io_context io_context;
+    //currently hardcoded for sanity reasons
+    NetworkClient client(io_context, "124.177.219.233", "8000"); 
+    std::thread io_thread([&io_context]() { io_context.run(); });
+
+    std::vector<std::pair<int, int>> all_coords;
+    
+    // Initialize game objects
+    while (!globalSettings.seed_received) {};
+    Game game(16, 30, 20);
+    MouseProps mouseProps;
+
     while (running) {
         // Handle events
         while (SDL_PollEvent(&event)) {
@@ -104,6 +127,9 @@ int main() {
                         SDL_GetMouseState(&mouseProps.mouseXc, &mouseProps.mouseYc);
                         mouseProps.rightClicked = true;
                     } else {
+                        if (SDL_GetTicks() - menuExitTime < 300) {
+                            continue;
+                        }
                         SDL_GetMouseState(&mouseProps.mouseX, &mouseProps.mouseY);
                         mouseProps.mouseDown = true;
                     }

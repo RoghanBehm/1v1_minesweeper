@@ -4,6 +4,7 @@
 #include "render.hpp"
 #include "settings.hpp"
 #include "game.hpp"
+#include "helper.hpp"
 
 
 void Draw::default_cell(SDL_Renderer *renderer, SDL_Rect rect) {
@@ -220,5 +221,67 @@ void Draw::Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message) {
     okButtonRect = buttonRect;
 }
 
+void Draw::titleButton(SDL_Renderer* renderer, TTF_Font* font, const char* label, int x, int y, int w, int h) {
+    // Draw the button background
+    SDL_Rect buttonRect = { x, y, w, h };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);  // Blue background
+    SDL_RenderFillRect(renderer, &buttonRect);
+
+    // Set the text color (SDL_Color is a real type; it takes RGBA values)
+    SDL_Color textColor = { 255, 255, 255, 255 };  // White
+
+    // Render the label text
+    int textWidth = 0, textHeight = 0;
+    SDL_Texture* textTexture = RenderText(renderer, font, label, textColor, textWidth, textHeight);
+    if (!textTexture)
+        return;  // Early exit on error
+
+    // Center the text in the button
+    SDL_Rect textRect = {
+        x + (w - textWidth) / 2,
+        y + (h - textHeight) / 2,
+        textWidth,
+        textHeight
+    };
+
+    SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
+    SDL_DestroyTexture(textTexture);
+}
 
 
+// Returns 1 for "Host Game", 2 for "Join Game", and -1 for quit.
+int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
+    bool menuRunning = true;
+    SDL_Event event;
+    
+    while (menuRunning) {
+        SDL_RenderClear(renderer);
+
+        // Draw the menu buttons
+        titleButton(renderer, font, "Host Game", 100, 100, 200, 50);
+        titleButton(renderer, font, "Join Game", 100, 200, 200, 50);
+
+        SDL_RenderPresent(renderer);
+
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT)
+                return -1;
+
+            if (event.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX, mouseY;
+                SDL_GetMouseState(&mouseX, &mouseY);
+
+                // Check if "Host Game" button was clicked
+                if (mouseX >= 100 && mouseX <= 300 && mouseY >= 100 && mouseY <= 150) {
+                    return 1;
+                }
+                // Check if "Join Game" button was clicked
+                if (mouseX >= 100 && mouseX <= 300 && mouseY >= 200 && mouseY <= 250) {
+                    return 2;
+                }
+            }
+        }
+        SDL_Delay(10); // Prevent busy looping
+    }
+    return 0;
+}
