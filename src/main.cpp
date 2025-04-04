@@ -1,5 +1,7 @@
+#define SDL_MAIN_HANDLED
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL_main.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL_image.h>
 #include "settings.hpp"
@@ -12,7 +14,7 @@
 
 int main() {
     boost::asio::io_context io_context;
-    NetworkClient client(io_context, "1.123.64.48", "8000");
+    NetworkClient client(io_context, "124.177.219.233", "8000");
     std::thread io_thread([&io_context]() { io_context.run(); });
 
     std::vector<std::pair<int, int>> all_coords;

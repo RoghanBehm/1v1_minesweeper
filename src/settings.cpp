@@ -1,4 +1,5 @@
 #include "settings.hpp"
+#include <cstdio>
 
 Settings globalSettings = {
     .window_width = 1920,
@@ -24,7 +25,7 @@ int loadGameAssets(SDL_Renderer *renderer, GameAssets *assets) {
     }
 
     assets->clicked_mine = IMG_LoadTexture(renderer, "assets/Clicked_Mine.png");
-    if (!assets->mine) {
+    if (!assets->clicked_mine) {
         printf("Failed to load mine texture: %s\n", SDL_GetError());
         return 1;
     }
