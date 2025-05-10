@@ -4,6 +4,9 @@
 #include <SDL_main.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL_image.h>
+#include "imgui.h"
+#include "backends/imgui_impl_sdlrenderer2.h"
+#include "backends/imgui_impl_sdl2.h"
 #include "settings.hpp"
 #include "game.hpp"
 #include "render.hpp"
@@ -39,6 +42,19 @@ int main() {
         return 1;
     }
 
+    // ImGui setup
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    ImGui::StyleColorsDark(); // Optional: choose your style
+
+    ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer2_Init(renderer);
+
+    
+   
+
     SDL_RenderSetLogicalSize(renderer, globalSettings.window_width, globalSettings.window_height);
 
     if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
@@ -58,7 +74,7 @@ int main() {
         return 1;
     }
 
-    // Gloop
+
     bool running = true;
     SDL_Event event;
     const int frameDelay = 1000 / 60;
@@ -69,7 +85,6 @@ int main() {
         return 1;
     }
 
-
     std::string basePath(SDL_GetBasePath());
     std::string fontPath = basePath + "../fonts/Helvetica.ttf";
 
@@ -79,28 +94,56 @@ int main() {
         return 1;
     }
 
+
+
     std::string addr;
     std::string ip;
     std::string port;
     int menuChoice = draw.mainMenu(renderer, font);
 
     if (menuChoice == -1) {
-        SDL_Quit();
-    } else if (menuChoice == 1) {
-        // Player is host
-    } else if (menuChoice == 2) {
-        // Player is joining a game
-        std::cout << "enter ip and port (e.g., 123.0.0.1:3000)\n";
-        std::string delimiter = ":";
-        std::cin >> addr;
-    ip = addr.substr(0, addr.find(delimiter));
-    port = addr.substr(addr.find(delimiter) + 1);
+    SDL_Quit();
+    return 0;
+}
+
+std::string ipBuffer = "127.0.0.1";
+std::string portBuffer = "8000";
+bool readyToJoin = false;
+
+if (menuChoice == 1) {
+    // Player is host
+} else if (menuChoice == 2) {
+    // Show ImGui popup now
+    while (!readyToJoin) {
+        while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+            if (event.type == SDL_QUIT) {
+                SDL_Quit();
+                return 0;
+            }
+        }
+
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        draw.DrawJoinHostUI("Join Game", ipBuffer, portBuffer, readyToJoin);
+
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+        SDL_RenderPresent(renderer);
     }
+}
+
     Uint32 menuExitTime = SDL_GetTicks();
+
+    // ImGui input loop
+    
 
     boost::asio::io_context io_context;
     //currently hardcoded for sanity reasons
-    NetworkClient client(io_context, "124.177.219.233", "8000"); 
+    NetworkClient client(io_context, ipBuffer, portBuffer);
+ 
     std::thread io_thread([&io_context]() { io_context.run(); });
 
     std::vector<std::pair<int, int>> all_coords;
@@ -127,7 +170,7 @@ int main() {
                         SDL_GetMouseState(&mouseProps.mouseXc, &mouseProps.mouseYc);
                         mouseProps.rightClicked = true;
                     } else {
-                        if (SDL_GetTicks() - menuExitTime < 300) {
+                        if (SDL_GetTicks() - menuExitTime < 300) {    // Debounce menu click
                             continue;
                         }
                         SDL_GetMouseState(&mouseProps.mouseX, &mouseProps.mouseY);

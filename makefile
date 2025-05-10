@@ -8,8 +8,19 @@ SRC_DIRS  = src client
 OBJ_DIR   = obj
 BIN_DIR   = bin
 TARGET    = $(BIN_DIR)/minesweeper
+IMGUI_DIR = external/imgui
+IMGUI_BACKEND = $(IMGUI_DIR)/backends
+IMGUI_SOURCES = \
+	$(IMGUI_DIR)/imgui.cpp \
+	$(IMGUI_DIR)/imgui_draw.cpp \
+	$(IMGUI_DIR)/imgui_tables.cpp \
+	$(IMGUI_DIR)/imgui_widgets.cpp \
+	$(IMGUI_BACKEND)/imgui_impl_sdl2.cpp \
+	$(IMGUI_BACKEND)/imgui_impl_sdlrenderer2.cpp
+CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_BACKEND)
 
-SOURCES = $(foreach d, $(SRC_DIRS), $(wildcard $(d)/*.cpp))
+
+SOURCES = $(foreach d, $(SRC_DIRS), $(wildcard $(d)/*.cpp)) $(IMGUI_SOURCES)
 
 OBJECTS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
 
@@ -47,6 +58,7 @@ WIN_CXXFLAGS = -Wall -Wextra -std=c++17 -I./include \
 	-Iwinlibs/SDL2_image-2.8.2/x86_64-w64-mingw32/include \
 	-Iwinlibs/SDL2_image-2.8.2/x86_64-w64-mingw32/include/SDL2 \
 	-Iwinlibs/SDL2_ttf-2.22.0/x86_64-w64-mingw32/include
+WIN_CXXFLAGS += -Iexternal/imgui -Iexternal/imgui/backends
 
 
 WIN_LDFLAGS = -Lwinlibs/SDL2-2.30.0/x86_64-w64-mingw32/lib \

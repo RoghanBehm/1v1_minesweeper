@@ -25,4 +25,6 @@ public:
     void blackFilter(SDL_Renderer *renderer);
     void Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message);
     int mainMenu(SDL_Renderer* renderer, TTF_Font* font);
+    void DrawJoinHostUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag);
+
 };

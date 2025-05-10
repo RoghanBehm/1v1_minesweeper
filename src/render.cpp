@@ -5,6 +5,7 @@
 #include "settings.hpp"
 #include "game.hpp"
 #include "helper.hpp"
+#include "imgui.h"
 
 
 void Draw::default_cell(SDL_Renderer *renderer, SDL_Rect rect) {
@@ -130,11 +131,10 @@ void Draw::menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
 
     // Menu
     SDL_SetRenderDrawColor(renderer, 123, 123, 123, 255);
-    SDL_Rect menu = {0, 0, globalSettings.menu_width, globalSettings.menu_height};
+    SDL_Rect menu = {30, 0, globalSettings.menu_width, globalSettings.menu_height};
     SDL_RenderFillRect(renderer, &menu);
 
     // Reset button
-
     if (!clicked) {
         SDL_SetRenderDrawColor(renderer, 0, 10, 103, 0);
     } else {
@@ -257,9 +257,18 @@ int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
     while (menuRunning) {
         SDL_RenderClear(renderer);
 
-        // Draw the menu buttons
-        titleButton(renderer, font, "Host Game", 100, 100, 200, 50);
-        titleButton(renderer, font, "Join Game", 100, 200, 200, 50);
+        
+        int button_width = 200;
+        int button_height = 50;
+        int spacing = 20;
+
+        int x = (globalSettings.window_width - button_width) / 2;
+        int y1 = (globalSettings.window_height - (2 * button_height + spacing)) / 2;
+        int y2 = y1 + button_height + spacing;
+
+        // Draw menu items
+        titleButton(renderer, font, "Host Game", x, y1, button_width, button_height);
+        titleButton(renderer, font, "Join Game", x, y2, button_width, button_height);
 
         SDL_RenderPresent(renderer);
 
@@ -271,17 +280,47 @@ int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
                 int mouseX, mouseY;
                 SDL_GetMouseState(&mouseX, &mouseY);
 
-                // Check if "Host Game" button was clicked
-                if (mouseX >= 100 && mouseX <= 300 && mouseY >= 100 && mouseY <= 150) {
-                    return 1;
+                // Check if menu items are clicked
+                if (mouseX >= x && mouseX <= x + button_width) {
+                    if (mouseY >= y1 && mouseY <= y1 + button_height)
+                        return 1;
+                    if (mouseY >= y2 && mouseY <= y2 + button_height)
+                        return 2;
                 }
-                // Check if "Join Game" button was clicked
-                if (mouseX >= 100 && mouseX <= 300 && mouseY >= 200 && mouseY <= 250) {
-                    return 2;
-                }
+
             }
         }
-        SDL_Delay(10); // Prevent busy looping
+        SDL_Delay(10);
     }
     return 0;
 }
+
+
+void Draw::DrawJoinHostUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag) {
+    float winX = static_cast<float>(globalSettings.window_width);
+    float winY = static_cast<float>(globalSettings.window_height);
+    ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
+
+    ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(centerPos, ImGuiCond_Always);
+
+    ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+    static char ipInput[64];
+    static char portInput[16];
+
+    strncpy(ipInput, ipBuffer.c_str(), sizeof(ipInput));
+    strncpy(portInput, portBuffer.c_str(), sizeof(portInput));
+
+    ImGui::InputText("IP Address", ipInput, IM_ARRAYSIZE(ipInput));
+    ImGui::InputText("Port", portInput, IM_ARRAYSIZE(portInput));
+
+    if (ImGui::Button("Connect")) {
+        ipBuffer = ipInput;
+        portBuffer = portInput;
+        readyFlag = true;
+    }
+
+    ImGui::End();
+}
+

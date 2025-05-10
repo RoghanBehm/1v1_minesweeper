@@ -309,7 +309,7 @@ void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps 
 {
     for (size_t i = 0; i < grid.size(); i++) {
         for (size_t j = 0; j < grid[i].size(); ++j) {
-            int cell_x = j * globalSettings.cell_size;
+            int cell_x = j * globalSettings.cell_size + 30;
             int cell_y = i * globalSettings.cell_size + globalSettings.menu_height;
 
             // Handle right-click toggle
@@ -397,7 +397,7 @@ void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const 
     }
     for (size_t i = 0; i < enemy_grid.size(); i++) {
         for (size_t j = 0; j < enemy_grid[i].size(); ++j) {
-            int offset = 960;
+            int offset = 990;
             int cell_x = j * globalSettings.cell_size + offset;
             int cell_y = i * globalSettings.cell_size + globalSettings.menu_height;            
 
