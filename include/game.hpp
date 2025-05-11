@@ -2,7 +2,7 @@
 #include <vector>
 #include <array>
 #include <set>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <ctime>
 #include "mouseProps.hpp"
 #include "settings.hpp"

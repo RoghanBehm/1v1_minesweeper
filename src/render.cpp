@@ -1,5 +1,5 @@
 #include <iostream>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <SDL_image.h>
 #include "render.hpp"
 #include "settings.hpp"
@@ -296,7 +296,7 @@ int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
 }
 
 
-void Draw::DrawJoinHostUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag) {
+void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag) {
     float winX = static_cast<float>(globalSettings.window_width);
     float winY = static_cast<float>(globalSettings.window_height);
     ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
@@ -324,3 +324,33 @@ void Draw::DrawJoinHostUI(const char* title, std::string& ipBuffer, std::string&
     ImGui::End();
 }
 
+void Draw::DrawHostUI(const char* title, std::string& portBuffer, std::string& numMinesBuffer, bool& readyFlag) {
+    float winX = static_cast<float>(globalSettings.window_width);
+    float winY = static_cast<float>(globalSettings.window_height);
+    ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
+
+    ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(centerPos, ImGuiCond_Always);
+
+    ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+    static char portInput[16];
+    static char numMines[16] = "10";
+
+    strncpy(portInput, portBuffer.c_str(), sizeof(portInput));
+    strncpy(numMines, numMinesBuffer.c_str(), sizeof(numMines));
+
+    ImGui::InputText("Port", portInput, IM_ARRAYSIZE(portInput));
+    ImGui::InputText("Mines", numMines, IM_ARRAYSIZE(numMines));
+
+    if (ImGui::Button("Back")) {
+        portBuffer = portInput;
+        readyFlag = true;
+    }
+
+    if (ImGui::Button("Create Game")) {
+        return;
+    }
+
+    ImGui::End();
+}

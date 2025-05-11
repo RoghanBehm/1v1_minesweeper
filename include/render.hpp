@@ -1,7 +1,7 @@
 
 #pragma once
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include "game.hpp"
 #include "settings.hpp"
 
@@ -25,6 +25,7 @@ public:
     void blackFilter(SDL_Renderer *renderer);
     void Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message);
     int mainMenu(SDL_Renderer* renderer, TTF_Font* font);
-    void DrawJoinHostUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag);
+    void DrawJoinUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag);
+    void DrawHostUI(const char* title, std::string& portBuffer, std::string& numMinesBuffer, bool& readyFlag);
 
 };

@@ -1,8 +1,8 @@
 #define SDL_MAIN_HANDLED
 #include <iostream>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <SDL_main.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL_ttf.h>
 #include <SDL_image.h>
 #include "imgui.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
@@ -12,7 +12,7 @@
 #include "render.hpp"
 #include "mouseProps.hpp"
 #include <string>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include "../client/client.hpp"
 
 int main() {
@@ -108,10 +108,34 @@ int main() {
 
 std::string ipBuffer = "127.0.0.1";
 std::string portBuffer = "8000";
+std::string mineNumBuffer = "30";
 bool readyToJoin = false;
+
 
 if (menuChoice == 1) {
     // Player is host
+    while (!readyToJoin) {
+        while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+            if (event.type == SDL_QUIT) {
+                SDL_Quit();
+                return 0;
+            }
+        }
+
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        draw.DrawHostUI("Host Game", portBuffer, mineNumBuffer, readyToJoin);
+
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+        SDL_RenderPresent(renderer);
+
+
+    }
+
 } else if (menuChoice == 2) {
     // Show ImGui popup now
     while (!readyToJoin) {
@@ -127,7 +151,7 @@ if (menuChoice == 1) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        draw.DrawJoinHostUI("Join Game", ipBuffer, portBuffer, readyToJoin);
+        draw.DrawJoinUI("Join Game", ipBuffer, portBuffer, readyToJoin);
 
         ImGui::Render();
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
@@ -140,7 +164,7 @@ if (menuChoice == 1) {
     // ImGui input loop
     
 
-    boost::asio::io_context io_context;
+    asio::io_context io_context;
     //currently hardcoded for sanity reasons
     NetworkClient client(io_context, ipBuffer, portBuffer);
  

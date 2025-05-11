@@ -2,19 +2,19 @@
 #include <array>
 #include <string>
 #include <iostream>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include "client.hpp"
 #include "../include/serialize.hpp"
 #include "../include/settings.hpp"
 
-using boost::asio::ip::tcp;
+using asio::ip::tcp;
 
-NetworkClient::NetworkClient(boost::asio::io_context &ioc, const std::string &host, const std::string &port)
+NetworkClient::NetworkClient(::asio::io_context &ioc, const std::string &host, const std::string &port)
     : socket_(ioc)
 {
     tcp::resolver resolver(ioc);
     auto endpoints = resolver.resolve(host, port);
-    boost::asio::connect(socket_, endpoints);
+    asio::connect(socket_, endpoints);
 
     read_seed();
 }
@@ -22,10 +22,10 @@ NetworkClient::NetworkClient(boost::asio::io_context &ioc, const std::string &ho
 void NetworkClient::send_message(const std::vector<char> &message)
 {
 
-    boost::asio::post(socket_.get_executor(), [this, message]()
-                      { boost::asio::async_write(socket_,
-                            boost::asio::buffer(message),
-                            [](const boost::system::error_code &ec, std::size_t bytes)
+    asio::post(socket_.get_executor(), [this, message]()
+                      { asio::async_write(socket_,
+                            asio::buffer(message),
+                            [](const std::error_code &ec, std::size_t bytes)
                             {
                                 if (!ec)
                                     std::cout << "Sent " << bytes << " bytes.\n";
@@ -38,11 +38,11 @@ void NetworkClient::read_seed()
 {
     auto buffer = std::make_shared<std::vector<char>>(8);
 
-    boost::asio::async_read(
+    asio::async_read(
         socket_,
-        boost::asio::buffer(*buffer),
-        boost::asio::transfer_exactly(8),
-        [this, buffer](const boost::system::error_code &ec, std::size_t bytes_transferred)
+        asio::buffer(*buffer),
+        asio::transfer_exactly(8),
+        [this, buffer](const std::error_code &ec, std::size_t bytes_transferred)
         {
             if (!ec && bytes_transferred == 8)
             {
@@ -81,8 +81,8 @@ void NetworkClient::async_read()
 {
     auto buffer = std::make_shared<std::vector<char>>(128);
     socket_.async_read_some(
-        boost::asio::buffer(*buffer),
-        [this, buffer](const boost::system::error_code& ec, std::size_t bytes_transferred)
+        asio::buffer(*buffer),
+        [this, buffer](const std::error_code& ec, std::size_t bytes_transferred)
         {
             if (!ec)
             {

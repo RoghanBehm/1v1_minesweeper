@@ -8,6 +8,7 @@ SRC_DIRS  = src client
 OBJ_DIR   = obj
 BIN_DIR   = bin
 TARGET    = $(BIN_DIR)/minesweeper
+
 IMGUI_DIR = external/imgui
 IMGUI_BACKEND = $(IMGUI_DIR)/backends
 IMGUI_SOURCES = \
@@ -31,6 +32,7 @@ $(TARGET): $(OBJECTS) | $(BIN_DIR)
 
 
 $(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
+	@mkdir -p build
 	@mkdir -p $(dir $@)          
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -44,6 +46,7 @@ $(BIN_DIR):
 
 gdb: $(TARGET)
 	gdb $(TARGET)
+
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
@@ -59,6 +62,7 @@ WIN_CXXFLAGS = -Wall -Wextra -std=c++17 -I./include \
 	-Iwinlibs/SDL2_image-2.8.2/x86_64-w64-mingw32/include/SDL2 \
 	-Iwinlibs/SDL2_ttf-2.22.0/x86_64-w64-mingw32/include
 WIN_CXXFLAGS += -Iexternal/imgui -Iexternal/imgui/backends
+
 
 
 WIN_LDFLAGS = -Lwinlibs/SDL2-2.30.0/x86_64-w64-mingw32/lib \
