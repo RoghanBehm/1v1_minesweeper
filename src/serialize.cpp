@@ -80,9 +80,9 @@ int deserialize_result(const std::vector<char>& buffer)
 
 
 
-std::vector<char> serialize_seed(int seed)
+std::vector<char> serialize_seed_and_mines(int seed, int num_mines)
 {
-    std::vector<char> buffer(sizeof(MessageType) + sizeof(int));
+    std::vector<char> buffer(sizeof(MessageType) + sizeof(int) * 2);
     char* ptr = buffer.data();
 
     MessageType type = MessageType::Seed;
@@ -90,11 +90,15 @@ std::vector<char> serialize_seed(int seed)
     ptr += sizeof(MessageType);
 
     std::memcpy(ptr, &seed, sizeof(int));
+    ptr += sizeof(int);
+
+    std::memcpy(ptr, &num_mines, sizeof(int));
+
     return buffer;
 }
 
 
-int deserialize_seed(const std::vector<char>& buffer)
+int deserialize_int(const std::vector<char>& buffer)
 {
     int seed;
     std::memcpy(&seed, buffer.data(), sizeof(int));
@@ -123,3 +127,15 @@ std::vector<char> serialize_bool_restart(bool b)
     return buffer;
 }
 
+std::vector<char> serialize_mines(int mines)
+{
+    std::vector<char> buffer(sizeof(MessageType) + sizeof(int));
+    char* ptr = buffer.data();
+
+    MessageType type = MessageType::Mine;
+    std::memcpy(ptr, &type, sizeof(MessageType));
+    ptr += sizeof(MessageType);
+
+    std::memcpy(ptr, &mines, sizeof(int));
+    return buffer;
+}

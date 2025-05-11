@@ -14,6 +14,7 @@ Settings globalSettings = {
     .regenerate = false,
     .seed_received = false,
     .coords_received = false,
+    .mine_number = 30
 };
 
 

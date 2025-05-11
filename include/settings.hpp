@@ -14,6 +14,7 @@ struct Settings {
     bool regenerate;
     bool seed_received;
     bool coords_received;
+    int mine_number;
 };
 
 extern Settings globalSettings;

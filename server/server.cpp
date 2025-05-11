@@ -37,7 +37,7 @@ public:
     {
         auto self = shared_from_this();
         asio::async_write(socket_, asio::buffer(message),
-            [this, self](const system::error_code& error, std::size_t /*bytes_transferred*/) {
+            [this, self](const std::error_code& error, std::size_t /*bytes_transferred*/) {
                 if (error)
                 {
                     std::cout << "Error sending coordinates: " << error.message() << std::endl;
@@ -60,8 +60,8 @@ private:
 class tcp_server
 {
 public:
-    tcp_server(asio::io_context& io_context, int seed)
-        : seed_(seed), io_context_(io_context), acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::any(), 8000))
+    tcp_server(asio::io_context& io_context, int seed, int num_mines)
+        : seed_(seed), num_mines_(num_mines), io_context_(io_context), acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::any(), 8000))
 
     {
         print_host_ip();
@@ -95,12 +95,12 @@ private:
         auto new_connection = tcp_connection::create(*this, io_context_);
 
         acceptor_.async_accept(new_connection->socket(),
-            [this, new_connection](const system::error_code& error) {
+            [this, new_connection](const std::error_code& error) {
                 if (!error)
                 {
                     std::cout << "New client connected!" << std::endl;
 
-                    std::vector<char> serialized_seed = serialize_seed(seed_);
+                    std::vector<char> serialized_seed = serialize_seed_and_mines(seed_, num_mines_);
                     new_connection->send_message(serialized_seed);
 
                     add_client(new_connection);
@@ -121,6 +121,7 @@ void print_host_ip()
 
 
     int seed_;
+    int num_mines_;
     asio::io_context& io_context_;
     tcp::acceptor acceptor_;
     std::vector<std::shared_ptr<tcp_connection>> clients_;
@@ -133,7 +134,7 @@ void tcp_connection::do_read()
     auto self = shared_from_this();
 socket_.async_read_some(
     asio::buffer(*message),
-    [this, self, message](const system::error_code& error, std::size_t bytes_transferred)
+    [this, self, message](const std::error_code& error, std::size_t bytes_transferred)
     {
         if (!error)
         {
@@ -165,14 +166,15 @@ socket_.async_read_some(
 
 
 
-int main()
+int main(int argc, char** argv)
 {
     int seed = std::time(nullptr);
+    int num_mines = std::stoi(argv[1]);
     try
     {
         asio::io_context io_context;
 
-        tcp_server server(io_context, seed);
+        tcp_server server(io_context, seed, num_mines);
 
         io_context.run();
     }

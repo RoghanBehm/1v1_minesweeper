@@ -174,7 +174,7 @@ if (menuChoice == 1) {
     
     // Initialize game objects
     while (!globalSettings.seed_received) {};
-    Game game(16, 30, 20);
+    Game game(16, 30, globalSettings.mine_number);
     MouseProps mouseProps;
 
     while (running) {

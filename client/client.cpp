@@ -1,5 +1,3 @@
-
-#include <array>
 #include <string>
 #include <iostream>
 #include <asio.hpp>
@@ -36,34 +34,35 @@ void NetworkClient::send_message(const std::vector<char> &message)
 
 void NetworkClient::read_seed()
 {
-    auto buffer = std::make_shared<std::vector<char>>(8);
+    auto buffer = std::make_shared<std::vector<char>>(12);
 
     asio::async_read(
         socket_,
         asio::buffer(*buffer),
-        asio::transfer_exactly(8),
+        asio::transfer_exactly(12),
         [this, buffer](const std::error_code &ec, std::size_t bytes_transferred)
         {
-            if (!ec && bytes_transferred == 8)
+            if (!ec && bytes_transferred == 12)
             {
                 MessageType type;
                 std::memcpy(&type, buffer->data(), sizeof(MessageType));
 
                 if (type == MessageType::Seed)
                 {
-                    std::memcpy(&seed,
-                                buffer->data() + sizeof(MessageType),
-                                sizeof(seed));
+                    int seed, num_mines;
+                    std::memcpy(&seed, buffer->data() + sizeof(MessageType), sizeof(seed));
+                    std::memcpy(&num_mines, buffer->data() + sizeof(MessageType) + sizeof(seed), sizeof(num_mines));
 
-                    std::cout << "Received seed: " << seed << std::endl;
+                    std::cout << "Received seed: " << seed << "\n" << "Received mine number:" << num_mines << std::endl;
                     std::srand(seed);
+                    globalSettings.mine_number = num_mines;
                 }
                 else
                 {
                     std::cerr << "Expected seed message, got something else.\n";
                 }
 
-                if (!ec && bytes_transferred == 8)
+                if (!ec && bytes_transferred == 12)
                 {
                     globalSettings.seed_received = true;
                     async_read();

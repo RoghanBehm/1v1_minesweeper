@@ -24,7 +24,7 @@ Clone the repository: `git clone https://github.com/RoghanBehm/minesweeper.git`
 ## How to Play
 To play on a local network server instance:
 1. Start the server:
-`./server`
+`./server <mine_number`
 2. Connect as a client:
 `bin/minesweeper`
 3. Start sweeping for mines. Players can reveal tiles with left click and flag tiles with right click.
@@ -43,7 +43,7 @@ At this stage, P2P over internet hosting requires the address value in main.cpp 
 - Boost.Asio: [Boost installation](https://www.boost.org/users/download/)
 
 3. Build the server:
-`g++ -o server server/server.cpp include/serialize.cpp -I include`
+`g++ -o server server/server.cpp src/serialize.cpp -I include`
 
 4. Build the client:
 `cd {your_path}/minesweeper`
