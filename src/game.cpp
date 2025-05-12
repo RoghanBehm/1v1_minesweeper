@@ -355,7 +355,8 @@ void Game::requestRestart(NetworkClient &client) {
 
 
 bool Game::bothAgreedRestart(NetworkClient &client) {
-    return restart_requested_ && client.hasOpponentRestarted();
+    restart_requested_ = false;
+    return true && client.hasOpponentRestarted();
 }
 
 

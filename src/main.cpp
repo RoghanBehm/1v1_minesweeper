@@ -14,8 +14,9 @@
 #include "render.hpp"
 #include "mouseProps.hpp"
 #include "process.hpp"
-
+#include "mouse_utils.hpp"
 #include "../client/client.hpp"
+#include "ui.hpp"
 
 int main() {
 
@@ -96,7 +97,7 @@ int main() {
         return 1;
     }
 
-    int menuChoice = draw.mainMenu(renderer, font);
+    int menuChoice = mainMenu(renderer);
 
     if (menuChoice == -1) {
     SDL_Quit();
@@ -184,10 +185,18 @@ if (menuChoice == 1) {
     
     // Initialize game objects
     while (!config.seed_received) {};
-    Game game(16, 30, config.mine_number);
+    const int rows = 16;
+    const int cols = 30;
+    Game game(rows, cols, config.mine_number);
     MouseProps mouseProps;
 
+    int window_w, window_h;
+
     while (running) {
+
+        // Handle window resizing
+        SDL_GetWindowSize(window, &window_w, &window_h);
+
         // Handle events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -201,13 +210,13 @@ if (menuChoice == 1) {
             } else {
                 if (event.type == SDL_MOUSEBUTTONDOWN) {
                     if (event.button.button == SDL_BUTTON_RIGHT) {
-                        SDL_GetMouseState(&mouseProps.mouseXc, &mouseProps.mouseYc);
+                        getScaledMousePosition(window_w, window_h, mouseProps.mouseXc, mouseProps.mouseYc);
                         mouseProps.rightClicked = true;
                     } else {
                         if (SDL_GetTicks() - menuExitTime < 300) {    // Debounce menu click
                             continue;
                         }
-                        SDL_GetMouseState(&mouseProps.mouseX, &mouseProps.mouseY);
+                        getScaledMousePosition(window_w, window_h, mouseProps.mouseX, mouseProps.mouseY);
                         mouseProps.mouseDown = true;
                     }
                 } else if (event.type == SDL_MOUSEBUTTONUP) {
@@ -215,7 +224,7 @@ if (menuChoice == 1) {
                         mouseProps.rightClicked = false;
                     } else if (game.popupActive) {
                         int mouseX, mouseY;
-                        SDL_GetMouseState(&mouseX, &mouseY);
+                        getScaledMousePosition(window_w, window_h, mouseX, mouseY);
 
                         // Check if OK button is clicked
                         SDL_Rect okButton = draw.okButtonRect;
@@ -224,12 +233,12 @@ if (menuChoice == 1) {
                             game.popupActive = false;
         }
                     } else {
-                        SDL_GetMouseState(&mouseProps.mouseXr, &mouseProps.mouseYr);
+                        getScaledMousePosition(window_w, window_h, mouseProps.mouseXr, mouseProps.mouseYr);
                         mouseProps.mouseDown = false;
                         mouseProps.released = true;
                     }
                 } else if (event.type == SDL_MOUSEMOTION && mouseProps.mouseDown) {
-                    SDL_GetMouseState(&mouseProps.mouseX, &mouseProps.mouseY);
+                    getScaledMousePosition(window_w, window_h, mouseProps.mouseX, mouseProps.mouseY);
                 }
             }
         }
@@ -238,13 +247,6 @@ if (menuChoice == 1) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
  
-
-        // Menu input
-        int reset_x = config.menu_width / 2 - config.reset_button_width / 2;
-        int reset_y = config.menu_height / 2 - config.reset_button_height / 2;
-        bool reset_released = cellClicked(mouseProps.mouseXr, mouseProps.mouseYr, reset_x, reset_y);
-        bool reset_clicked = cellClicked(mouseProps.mouseX, mouseProps.mouseY, reset_x, reset_y);
-
         // Reset game if regenerate
         if (config.regenerate) {
             client.clearEnemyData();
@@ -254,10 +256,10 @@ if (menuChoice == 1) {
             config.first_click = true;
         }
 
-        if (reset_clicked) {
-            game.requestRestart(client);
-        }
-        
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
         game.update(client);
 
         auto board = client.return_board();
@@ -265,9 +267,28 @@ if (menuChoice == 1) {
             all_coords.push_back(x);
         }
 
+        const int btn_x = (cols + 0) * config.cell_size;
+        const int btn_y = (rows + 4) * config.cell_size;
+        const int btn_w = config.reset_button_width;
+        const int btn_h = config.reset_button_height;
 
-        // Render menu
-        draw.menu(renderer, reset_x, reset_y, reset_clicked, reset_released);
+        // Reset button
+        ImGui::SetNextWindowPos(ImVec2((float)btn_x, (float)btn_y));
+        ImGui::SetNextWindowSize(ImVec2((float)btn_w, (float)btn_h));
+        ImGuiWindowFlags flags =
+            ImGuiWindowFlags_NoDecoration |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_NoBackground;
+        
+        ImGui::Begin("##ResetBtnWindow", nullptr, flags);
+        
+        if (ImGui::Button("Reset", ImVec2((float)btn_w, (float)btn_h)))
+            game.requestRestart(client);
+        
+        ImGui::End();
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
 
         // Render player grids
         game.createGrid(renderer, client, mouseProps, assets, draw);

@@ -127,35 +127,7 @@ void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
     }
 }
 
-void Draw::menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released) {
 
-    // Menu
-    SDL_SetRenderDrawColor(renderer, 123, 123, 123, 255);
-    SDL_Rect menu = {30, 0, config.menu_width, config.menu_height};
-    SDL_RenderFillRect(renderer, &menu);
-
-    // Reset button
-    if (!clicked) {
-        SDL_SetRenderDrawColor(renderer, 0, 10, 103, 0);
-    } else {
-        SDL_SetRenderDrawColor(renderer, 10, 120, 13, 40);
-    }
-    
-    SDL_Rect reset_button = {
-        x,
-        y,
-        config.reset_button_height,
-        config.reset_button_width
-    };
-    SDL_RenderFillRect(renderer, &reset_button);
-
-    if (released) {
-        SDL_SetRenderDrawColor(renderer, 0, 10, 103, 0);
-        SDL_RenderFillRect(renderer, &reset_button);
-    }
-
-            
-}
 
 void Draw::blackFilter(SDL_Renderer *renderer)
 {
@@ -220,81 +192,6 @@ void Draw::Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message) {
 
     okButtonRect = buttonRect;
 }
-
-void Draw::titleButton(SDL_Renderer* renderer, TTF_Font* font, const char* label, int x, int y, int w, int h) {
-    // Draw the button background
-    SDL_Rect buttonRect = { x, y, w, h };
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);  // Blue background
-    SDL_RenderFillRect(renderer, &buttonRect);
-
-    // Set the text color (SDL_Color is a real type; it takes RGBA values)
-    SDL_Color textColor = { 255, 255, 255, 255 };  // White
-
-    // Render the label text
-    int textWidth = 0, textHeight = 0;
-    SDL_Texture* textTexture = RenderText(renderer, font, label, textColor, textWidth, textHeight);
-    if (!textTexture)
-        return;  // Early exit on error
-
-    // Center the text in the button
-    SDL_Rect textRect = {
-        x + (w - textWidth) / 2,
-        y + (h - textHeight) / 2,
-        textWidth,
-        textHeight
-    };
-
-    SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
-    SDL_DestroyTexture(textTexture);
-}
-
-
-// Returns 1 for "Host Game", 2 for "Join Game", and -1 for quit.
-int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
-    bool menuRunning = true;
-    SDL_Event event;
-    
-    while (menuRunning) {
-        SDL_RenderClear(renderer);
-
-        
-        int button_width = 200;
-        int button_height = 50;
-        int spacing = 20;
-
-        int x = (config.window_width - button_width) / 2;
-        int y1 = (config.window_height - (2 * button_height + spacing)) / 2;
-        int y2 = y1 + button_height + spacing;
-
-        // Draw menu items
-        titleButton(renderer, font, "Host Game", x, y1, button_width, button_height);
-        titleButton(renderer, font, "Join Game", x, y2, button_width, button_height);
-
-        SDL_RenderPresent(renderer);
-
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT)
-                return -1;
-
-            if (event.type == SDL_MOUSEBUTTONDOWN) {
-                int mouseX, mouseY;
-                SDL_GetMouseState(&mouseX, &mouseY);
-
-                // Check if menu items are clicked
-                if (mouseX >= x && mouseX <= x + button_width) {
-                    if (mouseY >= y1 && mouseY <= y1 + button_height)
-                        return 1;
-                    if (mouseY >= y2 && mouseY <= y2 + button_height)
-                        return 2;
-                }
-
-            }
-        }
-        SDL_Delay(10);
-    }
-    return 0;
-}
-
 
 void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag) {
     float winX = static_cast<float>(config.window_width);
