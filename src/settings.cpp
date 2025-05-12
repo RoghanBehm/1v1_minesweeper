@@ -1,7 +1,7 @@
 #include "settings.hpp"
 #include <cstdio>
 
-Settings globalSettings = {
+Settings config = {
     .window_width = 1920,
     .window_height = 1080,
     .cell_size = 30,

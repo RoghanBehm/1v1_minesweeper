@@ -18,8 +18,8 @@ Node node {
 
 bool cellClicked(int x, int y, int cell_x, int cell_y)
 {
-    return (x >= cell_x && x <= cell_x + globalSettings.cell_size &&
-            y >= cell_y && y <= cell_y + globalSettings.cell_size);
+    return (x >= cell_x && x <= cell_x + config.cell_size &&
+            y >= cell_y && y <= cell_y + config.cell_size);
 }
 
 Game::Game(int rows, int cols, int numMines)
@@ -45,8 +45,8 @@ void Game::reset() {
     grid.resize(rows, std::vector<Node>(cols));
     enemy_grid.clear();
     enemy_grid.resize(rows, std::vector<Node>(cols));
-    globalSettings.game_over = false;
-    globalSettings.first_click = true;
+    config.game_over = false;
+    config.first_click = true;
     initialize();
 
     
@@ -192,9 +192,9 @@ void Game::revealBlock(int row, int col, std::vector<std::pair<int,int>> &newRev
 
 
 bool Game::checkWin() {
-    if (revealedCells >= safeCells) {
+    if (revealedCells >= safeCells && !lose) {
+        win         = true;
         popupActive = true;
-        win = true;
         return true;
     }
     return false;
@@ -222,8 +222,10 @@ void Game::revealCell(int row, int col) {
         revealedCells++;
 
         if (grid[row][col].hasMine) {
-            globalSettings.game_over = true;
-            popupActive = true;
+            win  = false;
+            lose = true;
+            config.game_over = true;
+            popupActive      = true;
         }
     }
 }
@@ -309,13 +311,13 @@ void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps 
 {
     for (size_t i = 0; i < grid.size(); i++) {
         for (size_t j = 0; j < grid[i].size(); ++j) {
-            int cell_x = j * globalSettings.cell_size + 30;
-            int cell_y = i * globalSettings.cell_size + globalSettings.menu_height;
+            int cell_x = j * config.cell_size + 30;
+            int cell_y = i * config.cell_size + config.menu_height;
 
             // Handle right-click toggle
             
             if (cellClicked(mouseProps.mouseXc, mouseProps.mouseYc, cell_x, cell_y) && mouseProps.rightClicked) {
-                if (!globalSettings.game_over && !grid[i][j].isRevealed) {
+                if (!config.game_over && !grid[i][j].isRevealed) {
                     grid[i][j].isFlagged = !grid[i][j].isFlagged;
                     mouseProps.rightClicked = false;
                 }
@@ -331,12 +333,12 @@ void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps 
 
 
             // If current cell does not contain mine, reveal neighbouring cells if none contain mines
-            if (currentCell.isRevealed && !currentCell.hasMine && !globalSettings.regenerate) {
+            if (currentCell.isRevealed && !currentCell.hasMine && !config.regenerate) {
                 revealBlanks(i, j);
             }
         }
     }
-    if (globalSettings.seed_received) 
+    if (config.seed_received) 
     {
         sendNewReveals(client);
     }
@@ -361,7 +363,7 @@ void Game::update(NetworkClient &client) {
     if (bothAgreedRestart(client)) {
         restart_requested_ = false;
         std::cout << "Both players agreed to restart. Resetting game..." << std::endl;
-        globalSettings.regenerate = true;
+        config.regenerate = true;
         reset();
     }
 }
@@ -398,8 +400,8 @@ void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const 
     for (size_t i = 0; i < enemy_grid.size(); i++) {
         for (size_t j = 0; j < enemy_grid[i].size(); ++j) {
             int offset = 990;
-            int cell_x = j * globalSettings.cell_size + offset;
-            int cell_y = i * globalSettings.cell_size + globalSettings.menu_height;            
+            int cell_x = j * config.cell_size + offset;
+            int cell_y = i * config.cell_size + config.menu_height;            
 
             // Pass current cell to cell for rendering
             Node &currentCell = enemy_grid[i][j];

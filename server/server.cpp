@@ -60,8 +60,8 @@ private:
 class tcp_server
 {
 public:
-    tcp_server(asio::io_context& io_context, int seed, int num_mines)
-        : seed_(seed), num_mines_(num_mines), io_context_(io_context), acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::any(), 8000))
+    tcp_server(asio::io_context& io_context, int seed, int num_mines, int port)
+        : seed_(seed), num_mines_(num_mines), io_context_(io_context), acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::any(), port))
 
     {
         print_host_ip();
@@ -170,11 +170,14 @@ int main(int argc, char** argv)
 {
     int seed = std::time(nullptr);
     int num_mines = std::stoi(argv[1]);
+    int port = std::stoi(argv[2]);
+
+    std::cout << "Port:" << port << std::endl;
     try
     {
         asio::io_context io_context;
 
-        tcp_server server(io_context, seed, num_mines);
+        tcp_server server(io_context, seed, num_mines, port);
 
         io_context.run();
     }

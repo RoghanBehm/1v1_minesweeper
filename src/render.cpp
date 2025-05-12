@@ -69,10 +69,10 @@ void Draw::mine_prox_cell(SDL_Renderer *renderer, const GameAssets &assets, int 
         }
 }
 void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &released, Node &cell, Game &game, const GameAssets &assets, int nearbyMines, int row, int col, bool isPlayer) {
-    SDL_Rect rect = {x, y, globalSettings.cell_size, globalSettings.cell_size};
+    SDL_Rect rect = {x, y, config.cell_size, config.cell_size};
 
     // If this is the safe start cell, fill it with gold
-    if (globalSettings.first_click && row == game.safeStartCell.first && col == game.safeStartCell.second) {
+    if (config.first_click && row == game.safeStartCell.first && col == game.safeStartCell.second) {
         SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255); // Gold
         SDL_RenderFillRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, 123, 123, 123, 255);
@@ -89,7 +89,7 @@ void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
         return;
     }
 
-    if ((globalSettings.game_over && cell.hasMine) && !globalSettings.regenerate) {
+    if ((config.game_over && cell.hasMine) && !config.regenerate) {
         if (cell.exploded) {
             SDL_RenderCopy(renderer, assets.clicked_mine, NULL, &rect);
             return;
@@ -99,20 +99,20 @@ void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
     }
 
     if ((released || cell.isRevealed)) {
-        if (released && !globalSettings.game_over) {
+        if (released && !config.game_over) {
             game.revealCell(row, col);
             released = false;
         }
 
-        if (cell.hasMine && !globalSettings.regenerate) {
+        if (cell.hasMine && !config.regenerate) {
             SDL_RenderCopy(renderer, assets.mine, NULL, &rect);
-            globalSettings.game_over = true;
+            config.game_over = true;
             return;
         }
 
         // If this is the player grid, set first click to false
         if (isPlayer) {
-         globalSettings.first_click = false;
+         config.first_click = false;
         }
         
 
@@ -120,7 +120,7 @@ void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
             mine_prox_cell(renderer, assets, nearbyMines, rect);
             return;
         }
-    } else if (clicked && !globalSettings.game_over) {
+    } else if (clicked && !config.game_over) {
         SDL_SetRenderDrawColor(renderer, 189, 189, 189, 255);
         SDL_RenderFillRect(renderer, &rect);
         return;
@@ -131,7 +131,7 @@ void Draw::menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
 
     // Menu
     SDL_SetRenderDrawColor(renderer, 123, 123, 123, 255);
-    SDL_Rect menu = {30, 0, globalSettings.menu_width, globalSettings.menu_height};
+    SDL_Rect menu = {30, 0, config.menu_width, config.menu_height};
     SDL_RenderFillRect(renderer, &menu);
 
     // Reset button
@@ -144,8 +144,8 @@ void Draw::menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
     SDL_Rect reset_button = {
         x,
         y,
-        globalSettings.reset_button_height,
-        globalSettings.reset_button_width
+        config.reset_button_height,
+        config.reset_button_width
     };
     SDL_RenderFillRect(renderer, &reset_button);
 
@@ -159,7 +159,7 @@ void Draw::menu(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
 
 void Draw::blackFilter(SDL_Renderer *renderer)
 {
-    SDL_Texture *filter = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, globalSettings.window_width, globalSettings.window_height);
+    SDL_Texture *filter = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, config.window_width, config.window_height);
 
     if (!filter) {
         std::cerr << "Failed to create texture for black filter: " << SDL_GetError() << std::endl;
@@ -177,8 +177,8 @@ void Draw::blackFilter(SDL_Renderer *renderer)
 
 
 void Draw::Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message) {
-    SDL_Rect popupRect = {globalSettings.window_width / 4, globalSettings.window_height / 4, 
-                          globalSettings.window_width / 2, globalSettings.window_height / 2};
+    SDL_Rect popupRect = {config.window_width / 4, config.window_height / 4, 
+                          config.window_width / 2, config.window_height / 2};
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &popupRect);
@@ -262,8 +262,8 @@ int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
         int button_height = 50;
         int spacing = 20;
 
-        int x = (globalSettings.window_width - button_width) / 2;
-        int y1 = (globalSettings.window_height - (2 * button_height + spacing)) / 2;
+        int x = (config.window_width - button_width) / 2;
+        int y1 = (config.window_height - (2 * button_height + spacing)) / 2;
         int y2 = y1 + button_height + spacing;
 
         // Draw menu items
@@ -297,8 +297,8 @@ int Draw::mainMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 
 void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag) {
-    float winX = static_cast<float>(globalSettings.window_width);
-    float winY = static_cast<float>(globalSettings.window_height);
+    float winX = static_cast<float>(config.window_width);
+    float winY = static_cast<float>(config.window_height);
     ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
 
     ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
@@ -315,6 +315,11 @@ void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& por
     ImGui::InputText("IP Address", ipInput, IM_ARRAYSIZE(ipInput));
     ImGui::InputText("Port", portInput, IM_ARRAYSIZE(portInput));
 
+    if (ImGui::Button("Back")) {
+        return;
+    }
+
+
     if (ImGui::Button("Connect")) {
         ipBuffer = ipInput;
         portBuffer = portInput;
@@ -325,8 +330,8 @@ void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& por
 }
 
 void Draw::DrawHostUI(const char* title, std::string& portBuffer, std::string& numMinesBuffer, bool& readyFlag) {
-    float winX = static_cast<float>(globalSettings.window_width);
-    float winY = static_cast<float>(globalSettings.window_height);
+    float winX = static_cast<float>(config.window_width);
+    float winY = static_cast<float>(config.window_height);
     ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
 
     ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
@@ -344,12 +349,11 @@ void Draw::DrawHostUI(const char* title, std::string& portBuffer, std::string& n
     ImGui::InputText("Mines", numMines, IM_ARRAYSIZE(numMines));
 
     if (ImGui::Button("Back")) {
-        portBuffer = portInput;
-        readyFlag = true;
+        return;
     }
 
     if (ImGui::Button("Create Game")) {
-        return;
+        readyFlag = true;
     }
 
     ImGui::End();

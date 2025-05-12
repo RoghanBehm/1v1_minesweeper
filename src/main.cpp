@@ -4,6 +4,8 @@
 #include <SDL_main.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <string>
+#include <asio.hpp>
 #include "imgui.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
 #include "backends/imgui_impl_sdl2.h"
@@ -11,8 +13,8 @@
 #include "game.hpp"
 #include "render.hpp"
 #include "mouseProps.hpp"
-#include <string>
-#include <asio.hpp>
+#include "process.hpp"
+
 #include "../client/client.hpp"
 
 int main() {
@@ -25,8 +27,8 @@ int main() {
     SDL_Window *window = SDL_CreateWindow("Minesweeper",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
-                                          globalSettings.window_width,
-                                          globalSettings.window_height,
+                                          config.window_width,
+                                          config.window_height,
                                           SDL_WINDOW_SHOWN);
     if (!window) {
         SDL_Log("Failed to create window: %s", SDL_GetError());
@@ -55,7 +57,7 @@ int main() {
     
    
 
-    SDL_RenderSetLogicalSize(renderer, globalSettings.window_width, globalSettings.window_height);
+    SDL_RenderSetLogicalSize(renderer, config.window_width, config.window_height);
 
     if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
         std::cerr << "SDL_SetWindowFullscreen Error: " << SDL_GetError() << std::endl;
@@ -94,11 +96,6 @@ int main() {
         return 1;
     }
 
-
-
-    std::string addr;
-    std::string ip;
-    std::string port;
     int menuChoice = draw.mainMenu(renderer, font);
 
     if (menuChoice == -1) {
@@ -132,9 +129,21 @@ if (menuChoice == 1) {
         ImGui::Render();
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
         SDL_RenderPresent(renderer);
-
-
     }
+    // think i need to pass portBuffer and mineNumBuffer to the spawn_process. could do a lambda capture? or just move in scope with an if (readToJoin)
+    #ifdef _WIN32
+    std::thread([portBuffer]{
+        spawn_process("server.exe", {std::to_string(config.mine_number), portBuffer});
+    }).detach();
+    #else
+    std::thread([portBuffer]{
+        spawn_process("serverr", {std::to_string(config.mine_number),portBuffer});
+    }).detach();
+    
+    #endif
+
+
+
 
 } else if (menuChoice == 2) {
     // Show ImGui popup now
@@ -165,7 +174,8 @@ if (menuChoice == 1) {
     
 
     asio::io_context io_context;
-    //currently hardcoded for sanity reasons
+
+    // Initialise client
     NetworkClient client(io_context, ipBuffer, portBuffer);
  
     std::thread io_thread([&io_context]() { io_context.run(); });
@@ -173,8 +183,8 @@ if (menuChoice == 1) {
     std::vector<std::pair<int, int>> all_coords;
     
     // Initialize game objects
-    while (!globalSettings.seed_received) {};
-    Game game(16, 30, globalSettings.mine_number);
+    while (!config.seed_received) {};
+    Game game(16, 30, config.mine_number);
     MouseProps mouseProps;
 
     while (running) {
@@ -230,18 +240,18 @@ if (menuChoice == 1) {
  
 
         // Menu input
-        int reset_x = globalSettings.menu_width / 2 - globalSettings.reset_button_width / 2;
-        int reset_y = globalSettings.menu_height / 2 - globalSettings.reset_button_height / 2;
+        int reset_x = config.menu_width / 2 - config.reset_button_width / 2;
+        int reset_y = config.menu_height / 2 - config.reset_button_height / 2;
         bool reset_released = cellClicked(mouseProps.mouseXr, mouseProps.mouseYr, reset_x, reset_y);
         bool reset_clicked = cellClicked(mouseProps.mouseX, mouseProps.mouseY, reset_x, reset_y);
 
         // Reset game if regenerate
-        if (globalSettings.regenerate) {
+        if (config.regenerate) {
             client.clearEnemyData();
             all_coords.clear();
             game.reset();
-            globalSettings.regenerate = false;
-            globalSettings.first_click = true;
+            config.regenerate = false;
+            config.first_click = true;
         }
 
         if (reset_clicked) {
@@ -263,9 +273,14 @@ if (menuChoice == 1) {
         game.createGrid(renderer, client, mouseProps, assets, draw);
         game.createEnemyGrid(renderer, mouseProps, assets, draw, all_coords);
 
+        if (config.game_over && !game.win && !game.lose) {
+            game.lose = true;
+            game.popupActive = true;
+            game.resultReturned = true;
+        }
         
         // Check win/loss
-        if (!game.win) {
+        if (!game.win && !game.lose && !config.game_over) {
             game.checkWin();
         }
 
@@ -294,7 +309,7 @@ if (menuChoice == 1) {
 
         }
 
-        if (game.lose || globalSettings.game_over) {
+        if (game.lose || config.game_over) {
             if (game.popupActive) {
                 draw.blackFilter(renderer);
                 draw.Popup(renderer, font, "You lose!");

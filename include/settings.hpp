@@ -17,7 +17,7 @@ struct Settings {
     int mine_number;
 };
 
-extern Settings globalSettings;
+extern Settings config;
 typedef struct {
     SDL_Texture *mine;
     SDL_Texture *clicked_mine;

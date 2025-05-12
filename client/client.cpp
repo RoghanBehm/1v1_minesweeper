@@ -55,7 +55,7 @@ void NetworkClient::read_seed()
 
                     std::cout << "Received seed: " << seed << "\n" << "Received mine number:" << num_mines << std::endl;
                     std::srand(seed);
-                    globalSettings.mine_number = num_mines;
+                    config.mine_number = num_mines;
                 }
                 else
                 {
@@ -64,7 +64,7 @@ void NetworkClient::read_seed()
 
                 if (!ec && bytes_transferred == 12)
                 {
-                    globalSettings.seed_received = true;
+                    config.seed_received = true;
                     async_read();
                 }
                 
@@ -131,7 +131,7 @@ void NetworkClient::async_read()
                         else if (type == MessageType::Seed)
                         {
                             read_seed();
-                            globalSettings.regenerate = true;
+                            config.regenerate = true;
                         }
                         else if (type == MessageType::Rematch) {
                             receiveRestartRequest();
@@ -173,7 +173,7 @@ void NetworkClient::clearEnemyData() {
 
 std::vector<std::pair<int,int>> NetworkClient::return_board()
 {
-    globalSettings.coords_received = false;
+    config.coords_received = false;
     return all_coords; 
 }
 
