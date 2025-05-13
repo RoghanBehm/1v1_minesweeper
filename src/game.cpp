@@ -307,42 +307,6 @@ void Game::sendLoss(NetworkClient &client)
 }
 
 
-void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps &mouseProps, const GameAssets &assets, Draw& draw)
-{
-    for (size_t i = 0; i < grid.size(); i++) {
-        for (size_t j = 0; j < grid[i].size(); ++j) {
-            int cell_x = j * config.cell_size + 30;
-            int cell_y = i * config.cell_size + config.menu_height;
-
-            // Handle right-click toggle
-            
-            if (cellClicked(mouseProps.mouseXc, mouseProps.mouseYc, cell_x, cell_y) && mouseProps.rightClicked) {
-                if (!config.game_over && !grid[i][j].isRevealed) {
-                    grid[i][j].isFlagged = !grid[i][j].isFlagged;
-                    mouseProps.rightClicked = false;
-                }
-            }
-
-            mouseProps.cellIsClicked = cellClicked(mouseProps.mouseX, mouseProps.mouseY, cell_x, cell_y);
-
-            // Pass current cell to draw.cell for rendering
-            Node &currentCell = grid[i][j];
-            mouseProps.released = cellClicked(mouseProps.mouseXr, mouseProps.mouseYr, cell_x, cell_y);
-            int surroundingMines = checkSurrounding(i, j);
-            draw.cell(renderer, cell_x, cell_y, mouseProps.cellIsClicked, mouseProps.released, currentCell, *this, assets, surroundingMines, i, j, true);
-
-
-            // If current cell does not contain mine, reveal neighbouring cells if none contain mines
-            if (currentCell.isRevealed && !currentCell.hasMine && !config.regenerate) {
-                revealBlanks(i, j);
-            }
-        }
-    }
-    if (config.seed_received) 
-    {
-        sendNewReveals(client);
-    }
-}
 
 void Game::requestRestart(NetworkClient &client) {
     if (!restart_requested_) {
@@ -391,6 +355,42 @@ std::pair<int, int> Game::findSafeCell() {
 
 
 
+void Game::createGrid(SDL_Renderer *renderer, NetworkClient &client, MouseProps &mouseProps, const GameAssets &assets, Draw& draw)
+{
+    for (size_t i = 0; i < grid.size(); i++) {
+        for (size_t j = 0; j < grid[i].size(); ++j) {
+            int cell_x = j * config.cell_size + config.cell_size;
+            int cell_y = i * config.cell_size + config.cell_size * 3;
+
+            // Handle right-click toggle
+            
+            if (cellClicked(mouseProps.mouseXc, mouseProps.mouseYc, cell_x, cell_y) && mouseProps.rightClicked) {
+                if (!config.game_over && !grid[i][j].isRevealed) {
+                    grid[i][j].isFlagged = !grid[i][j].isFlagged;
+                    mouseProps.rightClicked = false;
+                }
+            }
+
+            mouseProps.cellIsClicked = cellClicked(mouseProps.mouseX, mouseProps.mouseY, cell_x, cell_y);
+
+            // Pass current cell to draw.cell for rendering
+            Node &currentCell = grid[i][j];
+            mouseProps.released = cellClicked(mouseProps.mouseXr, mouseProps.mouseYr, cell_x, cell_y);
+            int surroundingMines = checkSurrounding(i, j);
+            draw.cell(renderer, cell_x, cell_y, mouseProps.cellIsClicked, mouseProps.released, currentCell, *this, assets, surroundingMines, i, j, true);
+
+
+            // If current cell does not contain mine, reveal neighbouring cells if none contain mines
+            if (currentCell.isRevealed && !currentCell.hasMine && !config.regenerate) {
+                revealBlanks(i, j);
+            }
+        }
+    }
+    if (config.seed_received) 
+    {
+        sendNewReveals(client);
+    }
+}
 
 void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const GameAssets &assets, Draw& draw, std::vector<std::pair<int, int>> coords)
 {
@@ -400,9 +400,9 @@ void Game::createEnemyGrid(SDL_Renderer *renderer, MouseProps &mouseProps,const 
     }
     for (size_t i = 0; i < enemy_grid.size(); i++) {
         for (size_t j = 0; j < enemy_grid[i].size(); ++j) {
-            int offset = 990;
+            int offset = (cols + 3) * config.cell_size;
             int cell_x = j * config.cell_size + offset;
-            int cell_y = i * config.cell_size + config.menu_height;            
+            int cell_y = i * config.cell_size + config.cell_size * 3;            
 
             // Pass current cell to cell for rendering
             Node &currentCell = enemy_grid[i][j];

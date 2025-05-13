@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL.h>
 #include <SDL_image.h>
+#include <atomic>
 struct Settings {
     int window_width;
     int window_height;
@@ -12,8 +13,8 @@ struct Settings {
     bool game_over;
     bool first_click;
     bool regenerate;
-    bool seed_received;
-    bool coords_received;
+    std::atomic<bool> seed_received{false};
+    std::atomic<bool> coords_received{false};
     int mine_number;
 };
 

@@ -1,3 +1,5 @@
+#include "SDL_video.h"
+#include <thread>
 #define SDL_MAIN_HANDLED
 #include <iostream>
 #include <SDL.h>
@@ -30,7 +32,8 @@ int main() {
                                           SDL_WINDOWPOS_CENTERED,
                                           config.window_width,
                                           config.window_height,
-                                          SDL_WINDOW_SHOWN);
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
+                                        );
     if (!window) {
         SDL_Log("Failed to create window: %s", SDL_GetError());
         SDL_Quit();
@@ -45,6 +48,19 @@ int main() {
         return 1;
     }
 
+    const int LOGICAL_W = 1920, LOGICAL_H = 1080;
+    SDL_Texture* logical_tex = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        LOGICAL_W, LOGICAL_H
+    );
+    if (!logical_tex) {
+        SDL_Log("Failed to create logical texture: %s", SDL_GetError());
+        return 1;
+    }
+
+
     // ImGui setup
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -54,16 +70,6 @@ int main() {
 
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
-
-    
-   
-
-    SDL_RenderSetLogicalSize(renderer, config.window_width, config.window_height);
-
-    if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
-        std::cerr << "SDL_SetWindowFullscreen Error: " << SDL_GetError() << std::endl;
-    }
-
 
     Draw draw;
     GameAssets assets;
@@ -113,6 +119,8 @@ bool readyToJoin = false;
 if (menuChoice == 1) {
     // Player is host
     while (!readyToJoin) {
+        int winW, winH;
+        SDL_GetWindowSize(window, &winW, &winH);
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) {
@@ -123,15 +131,21 @@ if (menuChoice == 1) {
 
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)LOGICAL_W, (float)LOGICAL_H);
+        io.DisplayFramebufferScale = ImVec2(
+            (float)winW / (float)LOGICAL_W,
+            (float)winH / (float)LOGICAL_H
+        );
+
         ImGui::NewFrame();
 
         draw.DrawHostUI("Host Game", portBuffer, mineNumBuffer, readyToJoin);
 
         ImGui::Render();
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
-        SDL_RenderPresent(renderer);
+        PresentLogical(renderer, logical_tex, window);
     }
-    // think i need to pass portBuffer and mineNumBuffer to the spawn_process. could do a lambda capture? or just move in scope with an if (readToJoin)
     #ifdef _WIN32
     std::thread([portBuffer]{
         spawn_process("server.exe", {std::to_string(config.mine_number), portBuffer});
@@ -144,7 +158,7 @@ if (menuChoice == 1) {
     #endif
 
 
-
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 } else if (menuChoice == 2) {
     // Show ImGui popup now
@@ -159,13 +173,21 @@ if (menuChoice == 1) {
 
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)LOGICAL_W, (float)LOGICAL_H);
+        int winW, winH;
+        SDL_GetWindowSize(window, &winW, &winH);
+        io.DisplayFramebufferScale = ImVec2(
+            (float)winW / (float)LOGICAL_W,
+            (float)winH / (float)LOGICAL_H
+        );
         ImGui::NewFrame();
 
         draw.DrawJoinUI("Join Game", ipBuffer, portBuffer, readyToJoin);
 
         ImGui::Render();
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
-        SDL_RenderPresent(renderer);
+        PresentLogical(renderer, logical_tex, window);
     }
 }
 
@@ -184,7 +206,9 @@ if (menuChoice == 1) {
     std::vector<std::pair<int, int>> all_coords;
     
     // Initialize game objects
-    while (!config.seed_received) {};
+    while (!config.seed_received.load(std::memory_order_acquire)) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
     const int rows = 16;
     const int cols = 30;
     Game game(rows, cols, config.mine_number);
@@ -196,6 +220,7 @@ if (menuChoice == 1) {
 
         // Handle window resizing
         SDL_GetWindowSize(window, &window_w, &window_h);
+
 
         // Handle events
         while (SDL_PollEvent(&event)) {
@@ -258,6 +283,10 @@ if (menuChoice == 1) {
 
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2(1920.0f, 1080.0f);
+        
         ImGui::NewFrame();
 
         game.update(client);
@@ -342,6 +371,12 @@ if (menuChoice == 1) {
             }            
         }
         
+        SDL_SetRenderTarget(renderer, nullptr);
+        SDL_RenderClear(renderer);
+        int winW, winH;
+        SDL_GetWindowSize(window, &winW, &winH);
+        SDL_Rect dst = { 0, 0, winW, winH };
+        SDL_RenderCopy(renderer, logical_tex, nullptr, &dst);
 
         SDL_RenderPresent(renderer);
         Uint32 frameTime = SDL_GetTicks() - frameStart;

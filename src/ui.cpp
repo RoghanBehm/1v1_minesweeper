@@ -16,6 +16,7 @@ int mainMenu(SDL_Renderer* renderer) {
 
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
+        
         ImGui::NewFrame();
 
         ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -43,7 +44,7 @@ int mainMenu(SDL_Renderer* renderer) {
             result = 1;
     
         ImGui::SetCursorPos(ImVec2(x, y2));
-        
+
         if (ImGui::Button("Join Game", ImVec2(button_w, button_h)))
             result = 2;
 
@@ -64,3 +65,17 @@ int mainMenu(SDL_Renderer* renderer) {
     return 0;
 }
 
+void PresentLogical(SDL_Renderer* renderer, SDL_Texture* logical_tex, SDL_Window* window) {
+
+SDL_SetRenderTarget(renderer, logical_tex);
+SDL_RenderClear(renderer);
+ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+
+SDL_SetRenderTarget(renderer, nullptr);
+SDL_RenderClear(renderer);
+int w, h;
+SDL_GetWindowSize(window, &w, &h);
+SDL_Rect dst = {0, 0, w, h};
+SDL_RenderCopy(renderer, logical_tex, nullptr, &dst);
+SDL_RenderPresent(renderer);
+}

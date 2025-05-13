@@ -65,6 +65,9 @@ public:
 
     {
         print_host_ip();
+
+        acceptor_.set_option(
+            asio::socket_base::reuse_address(true));
         start_accept();
     }
 

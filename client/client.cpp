@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <asio.hpp>
+#include <thread>
 #include "client.hpp"
 #include "../include/serialize.hpp"
 #include "../include/settings.hpp"
@@ -12,7 +13,23 @@ NetworkClient::NetworkClient(::asio::io_context &ioc, const std::string &host, c
 {
     tcp::resolver resolver(ioc);
     auto endpoints = resolver.resolve(host, port);
-    asio::connect(socket_, endpoints);
+    int retries = 10;
+    bool connected = false;
+
+    for (int i = 0; i < retries; ++i) {
+        try {
+            asio::connect(socket_, endpoints);
+            connected = true;
+            break;
+        } catch (const std::system_error &e) {
+            std::cerr << "Connect attempt " << (i + 1) << " failed: " << e.what() << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+    }
+
+    if (!connected) {
+        throw std::runtime_error("Unable to connect to server after multiple attempts.");
+    }
 
     read_seed();
 }
@@ -56,16 +73,12 @@ void NetworkClient::read_seed()
                     std::cout << "Received seed: " << seed << "\n" << "Received mine number:" << num_mines << std::endl;
                     std::srand(seed);
                     config.mine_number = num_mines;
+                    config.seed_received.store(true, std::memory_order_release);
+                    async_read();
                 }
                 else
                 {
                     std::cerr << "Expected seed message, got something else.\n";
-                }
-
-                if (!ec && bytes_transferred == 12)
-                {
-                    config.seed_received = true;
-                    async_read();
                 }
                 
             }

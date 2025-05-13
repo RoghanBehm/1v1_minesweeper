@@ -110,12 +110,10 @@ void Draw::cell(SDL_Renderer *renderer, int x, int y, bool &clicked, bool &relea
             return;
         }
 
-        // If this is the player grid, set first click to false
         if (isPlayer) {
          config.first_click = false;
         }
         
-
         if (cell.isRevealed) {
             mine_prox_cell(renderer, assets, nearbyMines, rect);
             return;
@@ -194,12 +192,15 @@ void Draw::Popup(SDL_Renderer *renderer, TTF_Font *font, const char *message) {
 }
 
 void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& portBuffer, bool& readyFlag) {
-    float winX = static_cast<float>(config.window_width);
-    float winY = static_cast<float>(config.window_height);
-    ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
-
-    ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(centerPos, ImGuiCond_Always);
+    ImGuiIO& io = ImGui::GetIO();
+    float winX = io.DisplaySize.x;
+    float winY = io.DisplaySize.y;
+    ImVec2 centerPos = ImVec2(
+        (winX  - 400.0f) * 0.5f,
+        (winY  - 200.0f) * 0.5f
+      );
+      ImGui::SetNextWindowSize(ImVec2(400,200), ImGuiCond_Always);
+      ImGui::SetNextWindowPos(centerPos, ImGuiCond_Always);
 
     ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
@@ -227,12 +228,15 @@ void Draw::DrawJoinUI(const char* title, std::string& ipBuffer, std::string& por
 }
 
 void Draw::DrawHostUI(const char* title, std::string& portBuffer, std::string& numMinesBuffer, bool& readyFlag) {
-    float winX = static_cast<float>(config.window_width);
-    float winY = static_cast<float>(config.window_height);
-    ImVec2 centerPos = ImVec2(winX / 2.0f - 200.0f, winY / 2.0f - 100.0f);
-
-    ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(centerPos, ImGuiCond_Always);
+    ImGuiIO& io = ImGui::GetIO();
+    float winX = io.DisplaySize.x;
+    float winY = io.DisplaySize.y;
+    ImVec2 centerPos = ImVec2(
+        (winX  - 400.0f) * 0.5f,
+        (winY  - 200.0f) * 0.5f
+      );
+      ImGui::SetNextWindowSize(ImVec2(400,200), ImGuiCond_Always);
+      ImGui::SetNextWindowPos(centerPos, ImGuiCond_Always);
 
     ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
