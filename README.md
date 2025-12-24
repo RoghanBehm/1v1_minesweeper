@@ -1,51 +1,20 @@
-# Multiplayer Minesweeper
-A competitive multiplayer implementation of the classic Minesweeper game.
+> **Project Status**
+>
+> This was an early C++ project developed primarily as a learning exercise in
+> networking, concurrency, and game-state synchronization (and for the fun of it).
+>
+> The project is **no longer actively maintained**, and the final commit may not represent a fully stable or
+> production-ready state.
+>
+> It is kept here for historical reference.
 
-## Getting Started
+## About This Project
 
-### Prerequisites
-Ensure the following dependencies are installed on your system:
+This project was my first attempt at building a C++ application and explores:
 
-- SDL2: For window creation, input handling, and rendering.
-  - SDL_ttf for font file support and text rendering
-  - SDL_image for image loading
-- Boost.Asio: For server and client networking (Asio header-only library is sufficient).
+- Client–server networking using Boost.Asio
+- Real-time game state synchronization
+- SDL-based rendering and input handling
+- Custom serialization logic for gameplay events
 
-### Launching
-Clone the repository: `git clone https://github.com/RoghanBehm/minesweeper.git`
-
-**Linux**:
-- Start the server from the `serverr` executable.
-- Start the client from the `bin/minesweeper` executable.
-
-**Windows**:
-- No current Windows build
-
-## How to Play
-To play on a local network server instance:
-1. Start the server:
-`./server <mine_number`
-2. Connect as a client:
-`bin/minesweeper`
-3. Start sweeping for mines. Players can reveal tiles with left click and flag tiles with right click.
-
-At this stage, P2P over internet hosting requires the address value in main.cpp to be changed to the host server address, and port 8000 to be forwarded.
-
-### Building From Source
-1. Clone the repository:
-`git clone https://github.com/RoghanBehm/minesweeper.git`
-
-2. Install required libraries
-- g++: [Installation guide](https://gcc.gnu.org/install/)
-- SDL2: [Installation guide](https://wiki.libsdl.org/SDL2/Installation)
-  - SDL_ttf: [Github](https://github.com/libsdl-org/SDL_image)
-  - SDL_image: [Github](https://github.com/libsdl-org/SDL_ttf)
-- Boost.Asio: [Boost installation](https://www.boost.org/users/download/)
-
-3. Build the server:
-`g++ -o server server/server.cpp src/serialize.cpp -I include`
-
-4. Build the client:
-`cd {your_path}/minesweeper`
-`make`
-
+As such, the architecture and code quality reflect an early stage in my C++ learning.
